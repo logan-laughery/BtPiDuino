@@ -8,10 +8,10 @@
 
 
 #include <SoftwareSerial.h>
-#include "BluetoothTranslater.h"
 #include "BluetoothManager.h"
 #include "SerialManager.h"
 #include "CommandListener.h"
+#include "CommandAbstract.h"
 
 CommandListener commandListener;
 
@@ -26,6 +26,7 @@ void loop()
 
   char output = serialManager.Read();
   if (output != (char) 0) {
+    //serialManager.Write(output);
     bluetoothManager.Write(output);
   }
 
@@ -34,5 +35,5 @@ void loop()
 //    serialManager.Write(input);
 //  }
 
-  char command = commandListener.GetCommand();
+  CommandAbstract * command = commandListener.GetCommand();
 }
