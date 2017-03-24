@@ -16,6 +16,7 @@ CommandAbstract * CommandDeserializer::DeserializeCommand(char rawCommand[])
   SerialManager& serialManager = SerialManager::GetInstance();
   BluetoothManager& bluetoothManager = BluetoothManager::GetInstance();
   serialManager.Debug(rawCommand);
+
   if (strcmp(rawCommand, "{ping}")  == 0)
   {
     bluetoothManager.Write('p');

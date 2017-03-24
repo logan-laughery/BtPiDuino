@@ -17,19 +17,33 @@ CommandAbstract * CommandListener::GetCommand()
   SerialManager& serialManager = SerialManager::GetInstance();
   CommandDeserializer& commandDeserializer = CommandDeserializer::GetInstance();
 
-  char input = bluetoothManager.Read();
-  if (input != (char) 0)
+  //Likely need to loop the bluetoothManager with a delay
+  //to grab all available char's before continuing (may need to look at flushing
+  //to avoid issues with similutaneous bluetooth commands)
+  bool commandRecieved = false;
+  while (bluetoothManager.Available() && !commandRecieved)
   {
-    serialManager.Debug(input);
-    //bluetoothManager.Write(input);
-
-    if (this->IsFullCommand(input))
-    {
-      return commandDeserializer.DeserializeCommand(this->rawInput);
-    }
+    char input = bluetoothManager.Read();
+    delay(2);
+    serialManager.Debug((char)input);
+    commandRecieved = this->IsFullCommand(input);
   }
 
-  return NULL;
+  if (!commandRecieved)
+    return NULL;
+
+  // Flush like here
+  // https://www.baldengineer.com/when-do-you-use-the-arduinos-to-use-serial-flush.html
+  while (bluetoothManager.Available())
+    bluetoothManager.Read();
+
+  serialManager.Debug('t');
+  serialManager.Debug('e');
+  serialManager.Debug('s');
+  serialManager.Debug('t');
+
+  bluetoothManager.Write('d');
+  return commandDeserializer.DeserializeCommand(this->rawInput);
 }
 
 char CommandListener::Test()
@@ -56,11 +70,19 @@ char CommandListener::Test()
 bool CommandListener::IsFullCommand(char newChar)
 {
   bool isFullCommand = false;
+
+  // Clear if we've exceeded command size
+  if (this->rawCharCount > 19)
+  {
+    this->ResetRawCommand();
+    return false;
+  }
+
   if (newChar == '{')
   {
     this->ResetRawCommand();
   }
-  else if (newChar == '}')
+  else if (newChar == '}' && this->rawInput[0] == '{')
   {
     isFullCommand = true;
   }

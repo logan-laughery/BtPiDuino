@@ -22,11 +22,7 @@ BluetoothManager::BluetoothManager()
 char BluetoothManager::Read()
 {
   // Read from HC-06 if available
-  if (BTserial.available())
-  {
-      return BTserial.read();
-  }
-  return (char) 0;
+  return BTserial.read();
 }
 
 void BluetoothManager::Write(char output[])
@@ -39,4 +35,10 @@ void BluetoothManager::Write(char output)
 {
   // Write string
   BTserial.write(output);
+}
+
+bool BluetoothManager::Available()
+{
+  // Read from HC-06 if available
+  return BTserial.available();
 }

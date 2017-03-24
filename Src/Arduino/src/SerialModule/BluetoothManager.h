@@ -16,6 +16,7 @@ class BluetoothManager
     void Write(char output[]);
     void Write(char output);
     char Read();
+    bool Available();
 };
 
 #endif
