@@ -25,10 +25,11 @@ CommandAbstract * CommandListener::GetCommand()
   {
     char input = bluetoothManager.Read();
     delay(2);
-    serialManager.Debug((char)input);
+    // serialManager.Debug((char)input);
     commandRecieved = this->IsFullCommand(input);
   }
 
+  // Haven't recieved full command yet
   if (!commandRecieved)
     return NULL;
 
@@ -37,12 +38,6 @@ CommandAbstract * CommandListener::GetCommand()
   while (bluetoothManager.Available())
     bluetoothManager.Read();
 
-  serialManager.Debug('t');
-  serialManager.Debug('e');
-  serialManager.Debug('s');
-  serialManager.Debug('t');
-
-  bluetoothManager.Write('d');
   return commandDeserializer.DeserializeCommand(this->rawInput);
 }
 

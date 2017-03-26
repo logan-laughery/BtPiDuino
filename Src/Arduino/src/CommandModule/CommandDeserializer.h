@@ -2,6 +2,7 @@
 #define COMMANDDESERIALIZER
 
 #include "CommandAbstract.h"
+#include "Arduino.h"
 
 class CommandDeserializer
 {
@@ -9,7 +10,7 @@ class CommandDeserializer
     CommandDeserializer();
     CommandDeserializer(CommandDeserializer const& copy); // Not implemented
     CommandDeserializer& operator=(CommandDeserializer const& copy); // Not implemented
-
+    String ExtractArgument(String rawCommand);
   public:
     static CommandDeserializer& GetInstance()
     {

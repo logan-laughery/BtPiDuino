@@ -2,11 +2,16 @@
 #define STATECOMMAND_H
 
 #include "CommandAbstract.h"
+#include "Arduino.h"
 
-class StateCommand
+class StateCommand : public CommandAbstract
 {
+  private:
+    int desiredState;
+    void ParseArgument(String argument);
   public:
-    void UpdateSettings(char value[]);
+    StateCommand(String state);
+    void PerformAction(void);
 };
 
 #endif

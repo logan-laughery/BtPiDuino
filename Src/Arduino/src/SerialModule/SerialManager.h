@@ -1,6 +1,8 @@
 #ifndef SERIALMANAGER_H
 #define SERIALMANAGER_H
 
+#include "Arduino.h"
+
 class SerialManager
 {
 
@@ -21,6 +23,7 @@ class SerialManager
     char Read();
     void Debug(char output[]);
     void Debug(char output);
+    void Debug(String string);
 };
 
 #endif

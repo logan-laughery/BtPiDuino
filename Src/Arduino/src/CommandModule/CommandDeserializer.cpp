@@ -5,6 +5,8 @@
 #include "SerialManager.h"
 #include "BluetoothManager.h"
 #include <string.h>
+#include "PingCommand.h"
+#include "StateCommand.h"
 
 
 CommandDeserializer::CommandDeserializer()
@@ -15,26 +17,27 @@ CommandAbstract * CommandDeserializer::DeserializeCommand(char rawCommand[])
 {
   SerialManager& serialManager = SerialManager::GetInstance();
   BluetoothManager& bluetoothManager = BluetoothManager::GetInstance();
-  serialManager.Debug(rawCommand);
 
-  if (strcmp(rawCommand, "{ping}")  == 0)
+  String rawCommandString = String(rawCommand);
+
+  serialManager.Debug(String("Received: " + rawCommandString));
+
+  bluetoothManager.Write(rawCommand);
+
+  if (rawCommandString.startsWith("{ping"))
   {
-    bluetoothManager.Write('p');
-    return NULL;
+    return new PingCommand;
   }
-  else if (strcmp(rawCommand, "{state}")  == 0)
+  else if (rawCommandString.startsWith("{state:"))
   {
-    bluetoothManager.Write('s');
-    return NULL;
+    return new StateCommand(this->ExtractArgument(rawCommandString));
   }
   return NULL;
 }
 
-// char[] ExtractCommandName(char rawCommand[])
-// {
-// }
-//
-// char[] ExtractArgument(char rawCommand[])
-// {
-//
-// }
+String CommandDeserializer::ExtractArgument(String rawCommand)
+{
+  int argStart = rawCommand.indexOf(":") + 1;
+  int argEnd = rawCommand.indexOf("}");
+  return rawCommand.substring(argStart, argEnd);
+}

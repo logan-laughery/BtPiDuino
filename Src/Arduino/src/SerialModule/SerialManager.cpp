@@ -7,7 +7,7 @@
 SerialManager::SerialManager()
 {
   Serial.begin(19200);
-  Serial.println("Enter AT commands:");
+  Serial.println("Started: Serial Manager");
 }
 
 char SerialManager::Read()
@@ -43,5 +43,12 @@ void SerialManager::Debug(char output[])
 {
   if (DEBUG) {
     Serial.write(output);
+  }
+}
+
+void SerialManager::Debug(String string)
+{
+  if (DEBUG) {
+    Serial.println(string);
   }
 }

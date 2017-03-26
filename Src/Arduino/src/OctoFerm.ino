@@ -36,4 +36,8 @@ void loop()
 //  }
 
   CommandAbstract * command = commandListener.GetCommand();
+  if (command != NULL)
+  {
+    command->PerformAction();
+  }
 }

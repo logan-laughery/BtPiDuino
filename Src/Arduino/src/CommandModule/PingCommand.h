@@ -7,6 +7,9 @@ class PingCommand : public CommandAbstract
 {
   public:
     PingCommand();
+    void PerformAction(void);
+  private:
+    void Blink();
 };
 
 #endif
