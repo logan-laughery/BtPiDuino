@@ -11,7 +11,7 @@ class StateCommand : public CommandAbstract
     void ParseArgument(String argument);
   public:
     StateCommand(String state);
-    void PerformAction(void);
+    void UpdateSettings(void);
 };
 
 #endif

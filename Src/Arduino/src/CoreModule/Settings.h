@@ -8,9 +8,10 @@ class Settings
     Settings(Settings const& copy); // Not implemented
     Settings& operator=(Settings const& copy); // Not implemented
   public:
-    float TargetTemp;
-    bool AutoTempControl;
-    bool ManualPumpOn;
+    float TargetTemp=0;
+    bool AutoTempControl=true;
+    bool ManualPumpOn=false;
+    bool Ping=false;
     static Settings& GetInstance()
     {
       static Settings instance;

@@ -8,7 +8,7 @@ class State
     State(State const& copy); // Not implemented
     State& operator=(State const& copy); // Not implemented
   public:
-    int CurrentTemp;
+    float CurrentTemp;
     bool PumpOn;
     static State& GetInstance()
     {

@@ -1,6 +1,8 @@
 #ifndef BLUETOOTHMANAGER_H
 #define BLUETOOTHMANAGER_H
 
+#include "Arduino.h"
+
 class BluetoothManager
 {
   private:

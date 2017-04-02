@@ -7,7 +7,7 @@ class CommandAbstract
 {
   public:
     CommandAbstract();
-    virtual void PerformAction() =0;
+    virtual void UpdateSettings() =0;
 };
 
 #endif

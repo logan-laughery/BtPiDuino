@@ -7,6 +7,9 @@
 #include <string.h>
 #include "PingCommand.h"
 #include "StateCommand.h"
+#include "TempStatusCommand.h"
+#include "PumpStatusCommand.h"
+#include "SetTempCommand.h"
 
 
 CommandDeserializer::CommandDeserializer()
@@ -31,6 +34,18 @@ CommandAbstract * CommandDeserializer::DeserializeCommand(char rawCommand[])
   else if (rawCommandString.startsWith("{state:"))
   {
     return new StateCommand(this->ExtractArgument(rawCommandString));
+  }
+  else if (rawCommandString.startsWith("{tempstatus"))
+  {
+    return new TempStatusCommand;
+  }
+  else if (rawCommandString.startsWith("{pumpstatus:"))
+  {
+    return new PumpStatusCommand;
+  }
+  else if (rawCommandString.startsWith("{temp:"))
+  {
+    return new SetTempCommand(this->ExtractArgument(rawCommandString));
   }
   return NULL;
 }

@@ -9,10 +9,10 @@ StateCommand::StateCommand(String argument): CommandAbstract()
   this->ParseArgument(argument);
 }
 
-void StateCommand::PerformAction()
+void StateCommand::UpdateSettings()
 {
   SerialManager& serialManager = SerialManager::GetInstance();
-  serialManager.Debug(String("Executing: State Action -> Argument=")
+  serialManager.Debug(String("Setting: State Command -> Argument=")
     + String(this->desiredState));
 
   Settings& settings = Settings::GetInstance();

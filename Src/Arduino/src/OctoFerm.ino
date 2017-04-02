@@ -12,8 +12,10 @@
 #include "SerialManager.h"
 #include "CommandListener.h"
 #include "CommandAbstract.h"
+#include "ActionManager.h"
 
 CommandListener commandListener;
+ActionManager actionManager;
 
 void setup()
 {
@@ -23,6 +25,8 @@ void loop()
 {
   SerialManager& serialManager = SerialManager::GetInstance();
   BluetoothManager& bluetoothManager = BluetoothManager::GetInstance();
+
+  //relayManager.SetOneOff();
 
   char output = serialManager.Read();
   if (output != (char) 0) {
@@ -38,6 +42,7 @@ void loop()
   CommandAbstract * command = commandListener.GetCommand();
   if (command != NULL)
   {
-    command->PerformAction();
+    command->UpdateSettings();
   }
+  actionManager.PerformActions();
 }
