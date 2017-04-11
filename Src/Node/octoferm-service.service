@@ -1,0 +1,22 @@
+# This file will need to be manually deployed
+# to /etc/systemd/system/octoferm-service.service
+# https://www.axllent.org/docs/view/nodejs-service-with-systemd/
+
+[Unit]
+Description=Octoferm-service.js Process
+#Requires=After-mysql.service 		# Example: Run mysql service first
+
+[Service]
+ExecStart=/usr/local/bin/node /home/pi/temp/octoferm/octoferm-service.js
+#WorkingDirectory=/opt/nodeserver 	# Required on some systems
+Restart=always
+RestartSec=10				# Restart service after 10 seconds
+StandardOutput=syslog			# Output to syslog
+StandardError=syslog			# Output to syslog
+SyslogIdentifier=octoferm-service	# Name in syslog?
+#User=<alternate user>
+#Group=<alternate group>
+Environment=NODE_ENV=production PORT=1337
+
+[Install]
+WantedBy=multi-user.target

@@ -9,6 +9,12 @@
   "author": "Logan Laughery",
   "license": "ISC",
   "dependencies": {
-    "inquirer": "^3.0.1"
+    "bluetooth-serial-port": "^2.1.2",
+    "browserify": "^14.3.0",
+    "gulp": "^3.9.1",
+    "gulp-prompt": "^0.2.0",
+    "gulp-ssh": "^0.6.0",
+    "inquirer": "^3.0.1",
+    "vinyl-source-stream": "^1.1.0"
   }
 }
