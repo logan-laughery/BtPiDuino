@@ -10,11 +10,16 @@
   "license": "ISC",
   "dependencies": {
     "bluetooth-serial-port": "^2.1.2",
+    "body-parser": "^1.17.1",
     "browserify": "^14.3.0",
+    "express": "^4.15.2",
     "gulp": "^3.9.1",
     "gulp-prompt": "^0.2.0",
     "gulp-ssh": "^0.6.0",
     "inquirer": "^3.0.1",
+    "sequelize": "^3.30.4",
+    "sequelize-cli": "^2.7.0",
+    "sqlite3": "^3.1.8",
     "vinyl-source-stream": "^1.1.0"
   }
 }

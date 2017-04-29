@@ -1,0 +1,10 @@
+
+//http://gregtrowbridge.com/getting-started-with-sequelize-and-the-sequelize-cli/
+var path = require('path');
+
+module.exports = {
+  'config': path.resolve('data', 'config.json'),
+  'migrations-path': path.resolve('data', 'migrations'),
+  'models-path': path.resolve('data', 'models'),
+  'seeders-path': path.resolve('data', 'seeders')
+}
