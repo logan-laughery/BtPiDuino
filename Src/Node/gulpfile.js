@@ -1,8 +1,8 @@
 var gulp = require('gulp');
 var prompt = require('gulp-prompt');
 var gulpSsh = require('gulp-ssh');
-var browserify = require('browserify');
 var source = require('vinyl-source-stream');
+var path = require('path');
 
 var config = {
   host: '192.168.2.169',
@@ -13,7 +13,7 @@ var config = {
 var sshConfig;
 function setSshConfig(){
   sshConfig = new gulpSsh({
-    ignoreErrors: false, 
+    ignoreErrors: false,
     sshConfig: config
   });
 }
@@ -32,7 +32,11 @@ gulp.task('password', function(){
 });
 
 gulp.task('deploy', ['password'], function(){
-  return gulp.src(['./package.json', './node-led-control.js', './octoferm-service.js', './octoferm-service.service'])
+  return gulp.src(['./package.json',
+    './.sequelizerc', './octoferm-manager.js',
+    './octoferm-service.js', './octoferm-api.js',
+    './data/**/*.*', './routes/**/*.*',
+    './service/**/*.*'], {base:__dirname})
     .pipe(sshConfig.dest('/home/pi/temp/octoferm'));
 });
 
@@ -44,11 +48,4 @@ gulp.task('install', ['deploy'], function(){
     .on('ssh2Data', function(chunk){
       process.stdout.write(chunk);
     });
-});
-
-gulp.task('browserify', ['deploy'], function() {
-  return browserify('./node-led-control.js')
-    .bundle()
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('./build/'));
 });

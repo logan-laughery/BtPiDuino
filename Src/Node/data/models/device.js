@@ -8,6 +8,10 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         // associations can be defined here
+        Device.hasMany(models.Action);
+        Device.hasMany(models.Log);
+        Device.hasOne(models.Settings);
+        Device.hasMany(models.Status);
       }
     }
   });
