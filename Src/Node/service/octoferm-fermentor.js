@@ -5,11 +5,28 @@ var BluetoothDevice = require('./bluetooth-device.js');
 var models  = require('../data/models');
 var method = Fermentor.prototype;
 
-function Fermentor(address, id) {
+function Fermentor(address, id, verbose) {
   this.id = id;
   this.settings = {};
   this.desiredSettings = {};
   this.device = new BluetoothDevice(address);
+  this.verbose = verbose;
+}
+
+method.close = function() {
+  this.device.close();
+}
+
+method.executeTest = function() {
+  var self = this;
+  return this.getDevice().then(() => self.getTemp());
+}
+
+method.log = function(message) {
+  var self = this;
+  if(self.verbose) {
+    console.log(message);
+  }
 }
 
 method.execute = function() {
@@ -17,8 +34,9 @@ method.execute = function() {
   //this.getDevice().then(() => getTemp())
     //.catch((err) => {console.log(err)});
     var self = this;
-    this.test2().then(() => self.getTemp())
-      .catch(err => {console.log(err)});
+    return this.getDevice().then(() => self.getTemp())
+      .then(() => {self.log('Completed command')})
+      .catch(err => {self.log('Error occurred:' + err)});
   // Wait 1 second
   // Check for actions
 
@@ -31,26 +49,13 @@ method.execute = function() {
   // Catch exceptions and wait to execute accordingly
 }
 
-method.test = function() {
-  models.Device.findAll()
-  .then(function (devices) {
-    console.log(devices);
-  }).catch(function(err) {
-    console.log(err);
-  });
-}
-method.test2 = function() {
+method.getDevice = function() {
   var self = this;
   return models.Device.findById(self.id)
   .then(function (device) {
+    self.log('Result retrieved from db');
     self.desiredSettings = device.settings;
   });
-}
-
-method.getDevice = function () {
-  var self = this;
-  return models.Device.findById(self.id)
-    .then((dev) => { self.desiredSettings = dev.settings });
 }
 
 method.checkForActions = function () {
@@ -83,16 +88,16 @@ method.setPump = function() {
 
 method.getTemp = function() {
   var self = this;
-  return self.sendCommand('tempstatus:', 'tempstatus')
-    .then((response) =>  console.log(response));
+  self.log('Get temp');
+  return self.sendCommand('tempstatus:', 'tempstatus');
 }
 
 method.sendCommand = function(command, expected) {
   var self = this;
   return self.device.executeCommand(command, expected, 1000)
     .catch((err) => {
-      console.log('Err: ' + err)
-      console.log('Attempting to send command again')
+      self.log('Err: ' + err)
+      self.log('Attempting to send command again')
       return self.device.executeCommand(command, expected, 1000)}
     );
 }

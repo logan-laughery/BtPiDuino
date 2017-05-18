@@ -26,7 +26,7 @@ var method = BluetoothDevice.prototype;
 //     });
 // });
 
-function BluetoothDevice(address) {
+function BluetoothDevice(address, verbose) {
   this.address = address;
   this.connected = false;
   this.received = '';
@@ -35,6 +35,12 @@ function BluetoothDevice(address) {
   this.serial.on('data', this.dataCallback.bind(this));
   this.serial.on('closed', this.closed.bind(this));
   this.serial.on('failure', this.closed.bind(this));
+  this.verbose = verbose;
+}
+
+method.close = function() {
+  var self = this;
+  self.serial.close();
 }
 
 method.closed = function() {
@@ -42,31 +48,41 @@ method.closed = function() {
   self.connected = false;
 }
 
+method.log = function(message) {
+  var self = this;
+  if(self.verbose)
+    console.log(message);
+}
+
 method.connect = function() {
   var self = this;
   var serial = self.serial;
   var address = self.address;
+  self.log('Connecting');
   return new Promise(function(resolve, reject){
-    if(self.connected)
+    if(self.connected) {
       resolve('Already connected');
-    serial.findSerialPortChannel(address, function(channel) {
-        serial.connect(address, channel, function() {
-            self.connected = true;
-            console.log('Connected to: ' + self.address)
-            resolve('Connected');
-        }, function () {
-            self.connected = false;
-            reject('Connection failed for Address: ' + address);
-        });
-    }, function() {
-      reject('Find Port failed for Address: ' + address);
-    });
+    } else {
+      serial.findSerialPortChannel(address, function(channel) {
+          serial.connect(address, channel, function() {
+              self.connected = true;
+              self.log('Connected to: ' + self.address)
+              resolve('Connected');
+          }, function () {
+              self.connected = false;
+              reject('Connection failed for Address: ' + address);
+          });
+      }, function() {
+        self.log('Failed finding port');
+        reject('Find Port failed for Address: ' + address);
+      });
+    }
   });
 }
 
 method.reset = function() {
-  console.log('Reset');
   var self = this;
+  self.log('Reset');
   self.received = '';
   self.expected = '';
   self.currentResolve = null;
@@ -75,7 +91,12 @@ method.reset = function() {
 
 method.dataCallback = function(buffer) {
   var response = buffer.toString('utf-8');
-  console.log('Got: ' + response);
+  var self = this;
+  self.log('Got: ' + response);
+  if (!this.currentResolve || !this.currentReject){
+    self.log('Recieved data after resolving');
+    return;
+  }
   for (var i=0, len=response.length; i < len; i++){
     this.received += response[i];
     if(response[i] === '{'){
@@ -86,7 +107,7 @@ method.dataCallback = function(buffer) {
       } else {
         this.currentReject('Unexpected response: ' + this.received);
       }
-      //this.reset();
+      this.reset();
     }
   }
   // Loop through returned chars to build response
@@ -103,7 +124,7 @@ method.sendCommand = function(command, response, timeout) {
     self.currentReject = reject;
     self.expected = '{' + response;
     var wrappedCommand = '{' + command + '}';
-    console.log('Sending: ' + wrappedCommand)
+    self.log('Sending: ' + wrappedCommand)
     self.serial.write(new Buffer(wrappedCommand, 'utf-8'), function(err, bytesWritten){
       if(err) reject(err);
     })
@@ -117,6 +138,7 @@ method.sendCommand = function(command, response, timeout) {
 
 method.executeCommand = function(command, response, timeout) {
   var self = this;
+  self.log('Execute command');
   return self.connect().then(() => self.sendCommand(command, response, timeout));
 }
 
