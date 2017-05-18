@@ -25,7 +25,7 @@ CommandAbstract * CommandDeserializer::DeserializeCommand(char rawCommand[])
 
   serialManager.Debug(String("Received: " + rawCommandString));
 
-  bluetoothManager.Write(rawCommand);
+  //bluetoothManager.Write(rawCommand);
 
   if (rawCommandString.startsWith("{ping"))
   {
