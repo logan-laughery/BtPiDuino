@@ -21,31 +21,30 @@ gulp.task('cleanIno', [], function() {
   return gulp.src(binDest + '/*.ino', { read: false }).pipe(rimraf());
 });
 
-gulp.task('copyHeaders', function() {
+gulp.task('copyHeaders', ['cleanHeaders'], function() {
   return gulp.src(hPath)
     .pipe(flatten())
     .pipe(gulp.dest(binDest));
 });
 
-gulp.task('copyCpp', function() {
+gulp.task('copyCpp', ['cleanCpp'], function() {
   return gulp.src(cppPath)
     .pipe(flatten())
     .pipe(gulp.dest(binDest));
 });
 
-gulp.task('copyIno', function() {
+gulp.task('copyIno', ['cleanIno'], function() {
   return gulp.src(inoPath)
     .pipe(flatten())
     .pipe(gulp.dest(binDest));
 });
 
-gulp.task('build', ['cleanHeaders', 'copyHeaders', 'cleanCpp',
-  'copyCpp', 'cleanIno', 'copyIno']);
+gulp.task('build', ['copyHeaders', 'copyCpp', 'copyIno']);
 
 gulp.task('default', function() {
-  gulp.watch(hPath, ['cleanHeaders', 'copyHeaders']);
-  gulp.watch(cppPath, ['cleanCpp', 'copyCpp']);
-  gulp.watch(inoPath, ['cleanIno', 'copyIno']);
+  gulp.watch(hPath, ['copyHeaders']);
+  gulp.watch(cppPath, ['copyCpp']);
+  gulp.watch(inoPath, ['copyIno']);
 });
 
 gulp.task('test', ['copyHeaders', 'copyCpp', 'copyIno']);

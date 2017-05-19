@@ -42,3 +42,8 @@ bool BluetoothManager::Available()
   // Read from HC-06 if available
   return BTserial.available();
 }
+
+void BluetoothManager::Write(String string)
+{
+  BTserial.println(string);
+}

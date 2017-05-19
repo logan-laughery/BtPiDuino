@@ -8,6 +8,7 @@
 #include "PingCommand.h"
 #include "StateCommand.h"
 #include "TempStatusCommand.h"
+#include "MemStatusCommand.h"
 #include "PumpStatusCommand.h"
 #include "SetTempCommand.h"
 
@@ -37,7 +38,13 @@ CommandAbstract * CommandDeserializer::DeserializeCommand(char rawCommand[])
   }
   else if (rawCommandString.startsWith("{tempstatus"))
   {
+    //bluetoothManager.Write(String("tempstatus"));
     return new TempStatusCommand;
+  }
+  else if (rawCommandString.startsWith("{memstatus"))
+  {
+    //bluetoothManager.Write(String("memstatus"));
+    return new MemStatusCommand;
   }
   else if (rawCommandString.startsWith("{pumpstatus:"))
   {

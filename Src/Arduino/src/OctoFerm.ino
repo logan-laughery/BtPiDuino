@@ -15,7 +15,7 @@
 #include "ActionManager.h"
 
 CommandListener commandListener;
-ActionManager actionManager;
+ActionManager* actionManager = new ActionManager();
 
 void setup()
 {
@@ -28,11 +28,11 @@ void loop()
 
   //relayManager.SetOneOff();
 
-  char output = serialManager.Read();
-  if (output != (char) 0) {
-    //serialManager.Write(output);
-    bluetoothManager.Write(output);
-  }
+//  char output = serialManager.Read();
+//  if (output != (char) 0) {
+//    //serialManager.Write(output);
+//    bluetoothManager.Write(output);
+//  }
 
 //  char input = bluetoothManager.Read();
 //  if (input != (char) 0) {
@@ -44,5 +44,6 @@ void loop()
   {
     command->UpdateSettings();
   }
-  actionManager.PerformActions();
+  actionManager->PerformActions();
+  delete command;
 }

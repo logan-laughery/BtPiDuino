@@ -8,6 +8,7 @@ class TempStatusCommand : public CommandAbstract
   public:
     TempStatusCommand();
     void UpdateSettings(void);
+    // int FreeRam(void);
   private:
 };
 
