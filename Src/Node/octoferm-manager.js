@@ -54,11 +54,21 @@ stdin.on( 'data', function( key ){
   if ( key == 'i') {
     ferm.executeTest()
       .then(function infinite(){
-        return delayPromise(5000)
+        return delayPromise(2000)
           .then(() => ferm.executeTest())
-          .then((response) => console.log(response))
+          .then((response) => {
+            var d = new Date();
+            console.log(d + " - " + response);
+          })
+          .then(() => delayPromise(2000))
+          .then(() => ferm.executeTest2())
+          .then((response) => {
+            var d = new Date();
+            console.log(d + " - " + response);
+          })
+          .catch((err) => {console.log("Error: " + err)})
           .then(infinite);
-      }).catch((err) => {console.log("error: " + err)});
+      }).catch((err) => {console.log("Critical Error: " + err)});
   }
 
   if ( key === 'q' ) {

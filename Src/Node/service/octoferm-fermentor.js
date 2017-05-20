@@ -10,7 +10,7 @@ function Fermentor(address, id, verbose) {
   this.settings = {};
   this.desiredSettings = {};
   this.device = new BluetoothDevice(address);
-  this.verbose = verbose;
+  this.verbose = false;
 }
 
 method.close = function() {
@@ -20,6 +20,11 @@ method.close = function() {
 method.executeTest = function() {
   var self = this;
   return this.getDevice().then(() => self.getTemp());
+}
+
+method.executeTest2 = function() {
+  var self = this;
+  return this.getDevice().then(() => self.getMem());
 }
 
 method.log = function(message) {
@@ -92,13 +97,19 @@ method.getTemp = function() {
   return self.sendCommand('tempstatus:', 'tempstatus');
 }
 
+method.getMem = function() {
+  var self = this;
+  self.log('Get mem');
+  return self.sendCommand('memstatus:', 'memstatus');
+}
+
 method.sendCommand = function(command, expected) {
   var self = this;
   return self.device.executeCommand(command, expected, 1000)
     .catch((err) => {
       self.log('Err: ' + err)
       self.log('Attempting to send command again')
-      return self.device.executeCommand(command, expected, 1000)}
+      return self.device.executeCommand(command, expected, 2000)}
     );
 }
 

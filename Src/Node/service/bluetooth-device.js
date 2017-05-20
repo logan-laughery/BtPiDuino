@@ -35,7 +35,7 @@ function BluetoothDevice(address, verbose) {
   this.serial.on('data', this.dataCallback.bind(this));
   this.serial.on('closed', this.closed.bind(this));
   this.serial.on('failure', this.closed.bind(this));
-  this.verbose = verbose;
+  this.verbose = false;
 }
 
 method.close = function() {
@@ -102,9 +102,9 @@ method.dataCallback = function(buffer) {
     if(response[i] === '{'){
       this.received = '{';
     } else if(response[i] === '}'){
-      if(this.received.startsWith(this.expected)){
+      if(this.received.startsWith(this.expected) && this.currentResolve){
         this.currentResolve(this.received);
-      } else {
+      } else if(this.currentReject) {
         this.currentReject('Unexpected response: ' + this.received);
       }
       this.reset();
