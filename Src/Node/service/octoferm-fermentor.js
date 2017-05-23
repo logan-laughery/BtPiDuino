@@ -10,7 +10,15 @@ function Fermentor(address, id, verbose) {
   this.settings = {};
   this.desiredSettings = {};
   this.device = new BluetoothDevice(address);
-  this.verbose = false;
+  this.verbose = true;
+  this.status = {};
+  this.actual = {};
+
+  this.lastExecution = null;
+  this.lastSettingsPoll = null;
+  this.lastTempPoll = null;
+  this.lastPumpPoll = null;
+  this.lastMemPoll = null;
 }
 
 method.close = function() {
@@ -27,11 +35,65 @@ method.executeTest2 = function() {
   return this.getDevice().then(() => self.getMem());
 }
 
+method.executeTest3 = function() {
+  var self = this;
+  return this.getDevice().then(() => self.getSettings());
+}
+
 method.log = function(message) {
   var self = this;
   if(self.verbose) {
     console.log(message);
   }
+}
+
+method.sendOnInterval = function(lastPerformedKey, intervalSec) {
+  var self = this;
+  var current = new Date();
+  var secsBetweenCommands = 1;
+  // if(self.lastExecution && ((current - self.lastExecution) / 1000) < secsBetweenCommands)
+  //   return false;
+
+  if(!self[lastPerformedKey] ||
+    ((current - self[lastPerformedKey]) / 1000) >= intervalSec) {
+    self[lastPerformedKey] = current;
+    return true;
+  }
+  return false;
+}
+
+method.loop = function() {
+  var self = this;
+  var promise = new Promise(resolve => resolve());
+
+  if(self.sendOnInterval('lastTempPoll', 5)){
+    promise = promise.then(() => self.getTemp()).then((result) => {
+      var d = new Date();
+      console.log(d + " - Polled temperature");
+    });
+  }
+
+  if(self.sendOnInterval('lastSettingsPoll', 30)){
+    promise = promise.then(() => self.getDevice())
+      .then(() => self.updateSettings()).then((result) => {
+        var d = new Date();
+        console.log(d + " - Polled settings");
+    });
+  }
+
+  if(self.sendOnInterval('lastMemPoll', 300)){
+    promise = promise.then(() => self.getMem()).then((result) => {
+      var d = new Date();
+      console.log(d + " - Polled memory");
+    });
+  }
+
+  promise = promise.catch((err, message) => {
+    console.log('Error:'+ message + ':' + JSON.stringify(err))
+    return self.logMessage(true, JSON.stringify(err));
+  });
+
+  return promise;
 }
 
 method.execute = function() {
@@ -56,65 +118,138 @@ method.execute = function() {
 
 method.getDevice = function() {
   var self = this;
-  return models.Device.findById(self.id)
+  return models.Device.findById(self.id, {
+    include: [{ model: models.Settings }]
+  })
   .then(function (device) {
     self.log('Result retrieved from db');
-    self.desiredSettings = device.settings;
+    if(device.Setting)
+      self.desiredSettings = device.Setting;
+    else {
+      self.desiredSettings = {
+        "temperature": 70,
+        "pumpState": "auto"
+      }
+    }
   });
 }
 
-method.checkForActions = function () {
-
+method.logMessage = function(isError, message) {
+  var self = this;
+  return models.Log.create({
+    DeviceId: self.id,
+    error: isError,
+    message: message
+  });
 }
 
-method.setTemp = function() {
+method.saveStatus = function(temp, isPumpOn, isAuto) {
   var self = this;
-  var actual = self.settings;
-  var desired = self.desiredSettings;
-  return Promise(resolve => {
-    if(desired.temperature && acutal.temperature != desired.temperature) {
-      var command = 'temp:' + desired.temperature;
-      return self.sendCommand(command, 'temp');
-    }
-  })
+  //console.log("saving status:" + temp + " " + isPumpOn + " " + isAuto);
+  return models.Status.create({
+    DeviceId: self.id,
+    temperature: temp,
+    pumpState: isPumpOn,
+    automatic: isAuto,
+  });
 }
 
-method.setPump = function() {
+method.setTemp = function(temp) {
   var self = this;
-  var actual = self.settings;
-  var desired = self.desiredSettings;
-  return Promise(resolve => {
-    if(desired.temperature && acutal.pumpState != desired.pumpState) {
-      var command = 'ps:' + desired.pumpState;
-      return self.sendCommand(command, 'ps');
-    }
-  })
+  var command = 'temp:' + temp;
+  return self.sendCommand(command, 'temp')
+    .then((result) => {
+      return self.logMessage(false, 'Set temp to: ' + temp);
+    });
+}
+
+method.setPump = function(state) {
+  var self = this;
+  var command = 'state:' + state;
+  return self.sendCommand(command, 'state')
+    .then((result) => {
+      return self.logMessage(false, 'Set pump state to: ' + state);
+    });
 }
 
 method.getTemp = function() {
   var self = this;
   self.log('Get temp');
-  return self.sendCommand('tempstatus:', 'tempstatus');
+  return self.sendCommand('tempstatus', 'tempstatus:')
+    .then((result) => {
+      var temp = result.substring(0, result.length - 1)
+        .split(":")[1];
+      return { temperature: Number(temp) };
+    })
+    .then((result) => {
+      return self.saveStatus(result.temperature,
+        self.actual.pumpRunning === true, self.actual.automaticControl === true);
+    });
 }
 
 method.getMem = function() {
   var self = this;
   self.log('Get mem');
-  return self.sendCommand('memstatus:', 'memstatus');
+  return self.sendCommand('memstatus', 'memstatus:')
+    .then((result) => {
+      var mem = result.substring(0, result.length - 1)
+        .split(":")[1];
+      return { memory: mem };
+    })
+    .then((result) => {
+      return self.logMessage(false, 'Remaining memory: ' + result.memory);
+    });
+}
+
+method.updateSettings = function () {
+  var self = this;
+  return self.getSettings()
+    .then((actual) => {
+      var promise = new Promise(resolve => resolve());
+      var desired = self.desiredSettings;
+      self.status = actual;
+      if(desired.temperature != actual.temperature) {
+        promise = promise.then(() => self.setTemp(desired.temperature)); // Set temp
+      }
+      if(desired.pumpState === 'auto' && !actual.automaticControl) {
+        promise = promise.then(() => self.setPump(0));// Set pump to auto
+      } else if(desired.pumpState === 'on' && (!actual.pumpRunning || actual.automaticControl)) {
+        promise = promise.then(() => self.setPump(1));// Set pump on
+      } else if(desired.pumpState === 'off' && (actual.pumpRunning || actual.automaticControl)) {
+        promise = promise.then(() => self.setPump(2));// Set pump off
+      }
+
+      return promise;
+    });
+}
+
+method.getSettings = function() {
+  var self = this;
+  self.log('Get settings');
+  return self.sendCommand('getsettings', 'getsettings:')
+    .then((result) => {
+      var vals = result.substring(0, result.length - 1)
+        .split(":")[1].split("|");
+      return {
+        temperature: vals[0],
+        automaticControl: vals[1] === "1",
+        pumpRunning: vals[2] === "1"
+      };
+    });
 }
 
 method.sendCommand = function(command, expected) {
   var self = this;
   return self.device.executeCommand(command, expected, 1000)
     .catch((err) => {
-      self.log('Err: ' + err)
+      console.log('Err: ' + err)
       self.log('Attempting to send command again')
-      return self.device.executeCommand(command, expected, 2000)}
-    );
-}
-
-method.updateStatus = function() {
-
+      return self.device.executeCommand(command, expected, 1000)}
+    ).catch((err) => {
+      console.log('Err(x2): ' + err)
+      self.log('Attempting to send command again')
+      return self.device.executeCommand(command, expected, 1000)}
+    );;
 }
 
 module.exports = Fermentor;

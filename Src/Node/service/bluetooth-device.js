@@ -35,7 +35,7 @@ function BluetoothDevice(address, verbose) {
   this.serial.on('data', this.dataCallback.bind(this));
   this.serial.on('closed', this.closed.bind(this));
   this.serial.on('failure', this.closed.bind(this));
-  this.verbose = false;
+  this.verbose = true;
 }
 
 method.close = function() {
@@ -129,7 +129,8 @@ method.sendCommand = function(command, response, timeout) {
       if(err) reject(err);
     })
     setTimeout(function() {
-      reject('Command timeout with no response');
+      reject('Command timeout with no response.  Expected: {' + response
+        + '  Got: ' + this.received);
       //self.reset();
     }, timeout);
   });

@@ -68,9 +68,90 @@ router.get('/scan', function (req, res) {
 });
 
 router.get('/:id/logs', function(req, res) {
-  models.Log.findAll({ where: {DeviceId : req.params.id}})
+  models.Log.findAll({ where: {DeviceId : req.params.id},
+    order: [ ['createdAt', 'DESC']],
+    limit: 20})
   .then(function (logs) {
     res.json({ logs: logs });
+  }).catch(function(err) {
+    res.json({error: err});
+  });
+});
+
+router.post('/:id/logs', function(req, res) {
+  models.Log.create({
+    DeviceId: req.params.id,
+    error: req.body.error,
+    message: req.body.message
+  }).then(function() {
+    res.json({ success: true });
+  }).catch(function(err) {
+    res.json({error: err});
+  });
+});
+
+router.get('/:id/status', function(req, res) {
+  models.Status.findAll({ where: {DeviceId : req.params.id},
+    order: [ ['createdAt', 'DESC']],
+    limit: 10 })
+  .then(function (status) {
+    res.json({ status: status });
+  }).catch(function(err) {
+    res.json({error: err});
+  });
+});
+
+router.post('/:id/status', function(req, res) {
+  models.Status.create({
+    DeviceId: req.params.id,
+    temperature: req.body.temperature,
+    pumpState: req.body.pumpState,
+    automatic: req.body.automatic,
+  }).then(function() {
+    res.json({ success: true });
+  }).catch(function(err) {
+    res.json({error: err});
+  });
+});
+
+router.get('/:id/settings', function(req, res) {
+  models.Device.findById(req.params.id, {
+    include: [{ model: models.Settings }]
+  }).then(function (device) {
+    res.json({ settings: device.Setting });
+  }).catch(function(err) {
+    res.json({error: err});
+  });
+});
+
+router.post('/:id/settings', function(req, res) {
+  models.Settings.find({where: { DeviceId: req.params.id}})
+  .then(function(record){
+    if(record){
+      return record.updateAttributes({
+        temperature: req.body.temperature,
+        pumpState: req.body.pumpState
+      });
+    } else {
+      return models.Settings.create({
+        DeviceId: req.params.id,
+        temperature: req.body.temperature,
+        pumpState: req.body.pumpState
+      });
+    }
+  }).then(function() {
+    res.json({ success: true });
+  }).catch(function(err) {
+    res.json({error: err});
+  });
+});
+
+router.delete('/:id/settings', function(req, res) {
+  models.Settings.find({where: { DeviceId: req.params.id}})
+  .then(function(record){
+    return record.destroy();
+  }).then(function() {
+    res.json({ success: true });
   }).catch(function(err) {
     res.json({error: err});
   });

@@ -15,7 +15,7 @@
 // var device = new Device('20:16:06:08:28:48');
 
 var Ferm  = require('./service/octoferm-fermentor.js');
-var ferm = new Ferm('20:16:06:08:28:48', 2);
+var ferm = new Ferm('20:16:06:08:28:48', 1);
 
 var stdin = process.stdin;
 
@@ -51,6 +51,17 @@ stdin.on( 'data', function( key ){
     ferm.execute();
   }
 
+  if ( key == 'm') {
+    function loop() {
+      return delayPromise(500)
+        .then(() => ferm.loop())
+        .catch((err) => {console.log("Error: " + err)})
+        .then(loop);
+    }
+
+    loop();
+  }
+
   if ( key == 'i') {
     ferm.executeTest()
       .then(function infinite(){
@@ -58,13 +69,19 @@ stdin.on( 'data', function( key ){
           .then(() => ferm.executeTest())
           .then((response) => {
             var d = new Date();
-            console.log(d + " - " + response);
+            console.log(d + " - " + JSON.stringify(response));
           })
           .then(() => delayPromise(2000))
           .then(() => ferm.executeTest2())
           .then((response) => {
             var d = new Date();
-            console.log(d + " - " + response);
+            console.log(d + " - " + JSON.stringify(response));
+          })
+          .then(() => delayPromise(2000))
+          .then(() => ferm.executeTest3())
+          .then((response) => {
+            var d = new Date();
+            console.log(d + " - " + JSON.stringify(response));
           })
           .catch((err) => {console.log("Error: " + err)})
           .then(infinite);

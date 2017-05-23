@@ -10,6 +10,12 @@ var config = {
   username: 'pi'
 }
 
+// var config = {
+//   host: '173.31.120.214',
+//   port: 2222,
+//   username: 'pi'
+// }
+
 var sshConfig;
 function setSshConfig(){
   sshConfig = new gulpSsh({
@@ -33,9 +39,9 @@ gulp.task('password', function(){
 
 gulp.task('deploy', ['password'], function(){
   return gulp.src(['./package.json',
-    './.sequelizerc', './octoferm-manager.js',
+    './.sequelizerc', //'./octoferm-manager.js',
     './octoferm-service.js', './octoferm-api.js',
-    './data/**/*.*', './routes/**/*.*',
+    './data/**/*.*', './routes/**/*.*', //'./db/**/*.*',
     './service/**/*.*'], {base:__dirname})
     .pipe(sshConfig.dest('/home/pi/temp/octoferm'));
 });
