@@ -11,6 +11,7 @@
 #include "MemStatusCommand.h"
 #include "PumpStatusCommand.h"
 #include "SetTempCommand.h"
+#include "GetSettingsCommand.h"
 
 
 CommandDeserializer::CommandDeserializer()
@@ -43,8 +44,11 @@ CommandAbstract * CommandDeserializer::DeserializeCommand(char rawCommand[])
   }
   else if (rawCommandString.startsWith("{memstatus"))
   {
-    //bluetoothManager.Write(String("memstatus"));
     return new MemStatusCommand;
+  }
+  else if (rawCommandString.startsWith("{getsettings"))
+  {
+    return new GetSettingsCommand;
   }
   else if (rawCommandString.startsWith("{pumpstatus:"))
   {

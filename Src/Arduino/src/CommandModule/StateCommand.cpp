@@ -3,6 +3,7 @@
 #include "SerialManager.h"
 #include "Arduino.h"
 #include "Settings.h"
+#include "BluetoothManager.h"
 
 StateCommand::StateCommand(String argument): CommandAbstract()
 {
@@ -33,6 +34,9 @@ void StateCommand::UpdateSettings()
     settings.AutoTempControl = true;
     settings.ManualPumpOn = false;
   }
+
+  BluetoothManager& bluetoothManager = BluetoothManager::GetInstance();
+  bluetoothManager.Write(String("{state:") + String(this->desiredState) + String("}"));
 }
 
 void StateCommand::ParseArgument(String argument)
