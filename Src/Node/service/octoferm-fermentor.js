@@ -67,9 +67,9 @@ method.loop = function() {
   var promise = new Promise(resolve => resolve());
 
   if(self.sendOnInterval('lastTempPoll', 5)){
-    promise = promise.then(() => self.getTemp()).then((result) => {
+    promise = promise.then(() => self.getState()).then((result) => {
       var d = new Date();
-      console.log(d + " - Polled temperature");
+      console.log(d + " - Polled state");
     });
   }
 
@@ -235,6 +235,24 @@ method.getSettings = function() {
         automaticControl: vals[1] === "1",
         pumpRunning: vals[2] === "1"
       };
+    });
+}
+
+method.getState = function() {
+  var self = this;
+  self.log('Get state');
+  return self.sendCommand('gs', 'gs:')
+    .then((result) => {
+      var vals = result.substring(0, result.length - 1)
+        .split(":")[1].split("|");
+      return {
+        temperature: vals[0],
+        pumpRunning: vals[1] === "1"
+      };
+    })
+    .then((result) => {
+      return self.saveStatus(result.temperature,
+        result.pumpRunning === true, self.actual.automaticControl === true);
     });
 }
 
