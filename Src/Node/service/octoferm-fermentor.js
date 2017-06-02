@@ -40,10 +40,11 @@ method.executeTest3 = function() {
   return this.getDevice().then(() => self.getSettings());
 }
 
-method.log = function(message) {
+method.log = function(message, type) {
   var self = this;
   if(self.verbose) {
-    console.log(message);
+    var d = new Date();
+    console.log(d + " - " + type + " - " + message);
   }
 }
 
@@ -68,28 +69,26 @@ method.loop = function() {
 
   if(self.sendOnInterval('lastTempPoll', 5)){
     promise = promise.then(() => self.getState()).then((result) => {
-      var d = new Date();
-      console.log(d + " - Polled state");
+      self.log("Polled state: " + JSON.stringify(result), "INFO");
     });
   }
 
   if(self.sendOnInterval('lastSettingsPoll', 30)){
     promise = promise.then(() => self.getDevice())
       .then(() => self.updateSettings()).then((result) => {
-        var d = new Date();
-        console.log(d + " - Polled settings");
+        self.log("Polled settings: " + JSON.stringify(result), "INFO");
     });
   }
 
   if(self.sendOnInterval('lastMemPoll', 300)){
     promise = promise.then(() => self.getMem()).then((result) => {
-      var d = new Date();
-      console.log(d + " - Polled memory");
+      self.log("Polled memory: " + JSON.stringify(result), "INFO");
     });
   }
 
   promise = promise.catch((err, message) => {
-    console.log('Error:'+ message + ':' + JSON.stringify(err))
+    self.log(message + ':' + JSON.stringify(err), "ERROR")
+    //console.log('Error:'+ message + ':' + JSON.stringify(err))
     return self.logMessage(true, JSON.stringify(err));
   });
 
@@ -122,7 +121,7 @@ method.getDevice = function() {
     include: [{ model: models.Settings }]
   })
   .then(function (device) {
-    self.log('Result retrieved from db');
+    //self.log('Result retrieved from db');
     if(device.Setting)
       self.desiredSettings = device.Setting;
     else {
@@ -174,7 +173,7 @@ method.setPump = function(state) {
 
 method.getTemp = function() {
   var self = this;
-  self.log('Get temp');
+  //self.log('Get temp');
   return self.sendCommand('tempstatus', 'tempstatus:')
     .then((result) => {
       var temp = result.substring(0, result.length - 1)
@@ -189,7 +188,7 @@ method.getTemp = function() {
 
 method.getMem = function() {
   var self = this;
-  self.log('Get mem');
+  //self.log('Get mem');
   return self.sendCommand('memstatus', 'memstatus:')
     .then((result) => {
       var mem = result.substring(0, result.length - 1)
@@ -197,7 +196,11 @@ method.getMem = function() {
       return { memory: mem };
     })
     .then((result) => {
-      return self.logMessage(false, 'Remaining memory: ' + result.memory);
+      var mem = result;
+      return self.logMessage(false, 'Remaining memory: ' + result.memory)
+        .then(() => {
+          return mem;
+        });
     });
 }
 
@@ -209,15 +212,24 @@ method.updateSettings = function () {
       var desired = self.desiredSettings;
       self.status = actual;
       if(desired.temperature != actual.temperature) {
+        self.log("Need to set temp - Actual: " + actual.temperature + " Desired: " + desired.temperature, "WARNING");
         promise = promise.then(() => self.setTemp(desired.temperature)); // Set temp
       }
       if(desired.pumpState === 'auto' && !actual.automaticControl) {
+        self.log("Need to set pump - Auto: " + actual.automaticControl + " Desired: " + desired.pumpState, "WARNING");
         promise = promise.then(() => self.setPump(0));// Set pump to auto
       } else if(desired.pumpState === 'on' && (!actual.pumpRunning || actual.automaticControl)) {
+        self.log("Need to set pump - Auto: " + actual.automaticControl + " Desired: " + desired.pumpState, "WARNING");
         promise = promise.then(() => self.setPump(1));// Set pump on
       } else if(desired.pumpState === 'off' && (actual.pumpRunning || actual.automaticControl)) {
+        self.log("Need to set pump - Auto: " + actual.automaticControl + " Desired: " + desired.pumpState, "WARNING");
         promise = promise.then(() => self.setPump(2));// Set pump off
       }
+
+      var response = {};
+      response.actual = actual;
+      response.desired = { "temperature" : desired.temperature, "pumpState" : desired.pumpState };
+      promise = promise.then(() => { return response });
 
       return promise;
     });
@@ -225,7 +237,7 @@ method.updateSettings = function () {
 
 method.getSettings = function() {
   var self = this;
-  self.log('Get settings');
+  //self.log('Get settings');
   return self.sendCommand('getsettings', 'getsettings:')
     .then((result) => {
       var vals = result.substring(0, result.length - 1)
@@ -240,7 +252,7 @@ method.getSettings = function() {
 
 method.getState = function() {
   var self = this;
-  self.log('Get state');
+  //self.log('Get state');
   return self.sendCommand('gs', 'gs:')
     .then((result) => {
       var vals = result.substring(0, result.length - 1)
@@ -251,8 +263,12 @@ method.getState = function() {
       };
     })
     .then((result) => {
+      var state = result;
       return self.saveStatus(result.temperature,
-        result.pumpRunning === true, self.actual.automaticControl === true);
+          result.pumpRunning === true, self.actual.automaticControl === true)
+        .then((response) => {
+          return state;
+        });
     });
 }
 
@@ -260,12 +276,12 @@ method.sendCommand = function(command, expected) {
   var self = this;
   return self.device.executeCommand(command, expected, 1000)
     .catch((err) => {
-      console.log('Err: ' + err)
-      self.log('Attempting to send command again')
+      //console.log('Err: ' + err)
+      self.log("Attempting to send command '" + command + "' again due to error: " + err, "WARNING")
       return self.device.executeCommand(command, expected, 1000)}
     ).catch((err) => {
-      console.log('Err(x2): ' + err)
-      self.log('Attempting to send command again')
+      //console.log('Err(x2): ' + err)
+      self.log("Attempting to send command '" + command + "' one more time due to error: " + err, "WARNING")
       return self.device.executeCommand(command, expected, 1000)}
     );;
 }

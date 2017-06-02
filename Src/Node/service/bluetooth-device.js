@@ -35,7 +35,7 @@ function BluetoothDevice(address, verbose) {
   this.serial.on('data', this.dataCallback.bind(this));
   this.serial.on('closed', this.closed.bind(this));
   this.serial.on('failure', this.closed.bind(this));
-  this.verbose = true;
+  this.verbose = false;
 }
 
 method.close = function() {

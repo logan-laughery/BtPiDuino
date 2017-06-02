@@ -38,7 +38,7 @@ gulp.task('password', function(){
 });
 
 gulp.task('deploy', ['password'], function(){
-  return gulp.src(['./package.json',
+  return gulp.src(['./package.json', './octoferm-diagnostic.js',
     './.sequelizerc', './octoferm-manager.js',
     './octoferm-service.js', './octoferm-api.js',
     './data/**/*.*', './routes/**/*.*', './db/**/*.*',
