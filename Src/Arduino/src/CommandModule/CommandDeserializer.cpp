@@ -12,6 +12,7 @@
 #include "PumpStatusCommand.h"
 #include "SetTempCommand.h"
 #include "GetSettingsCommand.h"
+#include "GetStateCommand.h"
 
 
 CommandDeserializer::CommandDeserializer()
@@ -53,6 +54,10 @@ CommandAbstract * CommandDeserializer::DeserializeCommand(char rawCommand[])
   else if (rawCommandString.startsWith("{pumpstatus:"))
   {
     return new PumpStatusCommand;
+  }
+  else if (rawCommandString.startsWith("{gs"))
+  {
+    return new GetStateCommand;
   }
   else if (rawCommandString.startsWith("{temp:"))
   {
