@@ -9,8 +9,9 @@ function Fermentor(address, id, verbose) {
   this.id = id;
   this.settings = {};
   this.desiredSettings = {};
-  this.device = new BluetoothDevice(address);
   this.verbose = true;
+  this.log('Connecting to: ' + address, "INFO");
+  this.device = new BluetoothDevice(address);
   this.status = {};
   this.actual = {};
 

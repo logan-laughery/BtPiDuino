@@ -5,8 +5,8 @@ var source = require('vinyl-source-stream');
 var path = require('path');
 
 var config = {
-  host: '192.168.2.169',
-  port: 22,
+  host: '173.31.120.214',
+  port: 2222,
   username: 'pi'
 }
 
