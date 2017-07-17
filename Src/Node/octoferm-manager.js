@@ -1,3 +1,6 @@
+// Example useage:
+// node octoferm-manager.js 2 < /dev/null > ferm2.log 2>&1 &
+
 var Ferm  = require('./service/octoferm-fermentor.js');
 var models  = require('./data/models');
 

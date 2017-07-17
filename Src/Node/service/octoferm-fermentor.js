@@ -4,6 +4,7 @@
 var BluetoothDevice = require('./bluetooth-device.js');
 var models  = require('../data/models');
 var method = Fermentor.prototype;
+var rp = require('request-promise');
 
 function Fermentor(address, id, verbose) {
   this.id = id;
@@ -14,12 +15,14 @@ function Fermentor(address, id, verbose) {
   this.device = new BluetoothDevice(address);
   this.status = {};
   this.actual = {};
+  this.dbDevice = {};
 
   this.lastExecution = null;
   this.lastSettingsPoll = null;
   this.lastTempPoll = null;
   this.lastPumpPoll = null;
   this.lastMemPoll = null;
+  this.lastDataSync = null;
 }
 
 method.close = function() {
@@ -87,10 +90,20 @@ method.loop = function() {
     });
   }
 
+  if(self.sendOnInterval('lastDataSync', 30)){
+    promise = promise.then(() => self.syncData()).then((result) => {
+      self.log("Synced data", "INFO");
+    });
+  }
+
   promise = promise.catch((err, message) => {
-    self.log(message + ':' + JSON.stringify(err), "ERROR")
-    //console.log('Error:'+ message + ':' + JSON.stringify(err))
-    return self.logMessage(true, JSON.stringify(err));
+    if (typeof err === 'string' || err instanceof String) {
+      self.log(err, "ERROR")
+      return self.logMessage(true, err);
+    } else {
+      self.log(message + ':' + JSON.stringify(err), "ERROR")
+      return self.logMessage(true, JSON.stringify(err));
+    }
   });
 
   return promise;
@@ -123,6 +136,7 @@ method.getDevice = function() {
   })
   .then(function (device) {
     //self.log('Result retrieved from db');
+    self.dbDevice = device;
     if(device.Setting)
       self.desiredSettings = device.Setting;
     else {
@@ -189,6 +203,64 @@ method.getTemp = function() {
 
 method.getMem = function() {
   var self = this;
+  //self.log('Get mem');
+  return self.sendCommand('memstatus', 'memstatus:')
+    .then((result) => {
+      var mem = result.substring(0, result.length - 1)
+        .split(":")[1];
+      return { memory: mem };
+    })
+    .then((result) => {
+      var mem = result;
+      return self.logMessage(false, 'Remaining memory: ' + result.memory)
+        .then(() => {
+          return mem;
+        });
+    });
+}
+
+method.syncData = function() {
+  var self = this;
+  var logProm = models.Log.findAll({ where: {DeviceId : self.id},
+    order: [ ['createdAt', 'ASC']],
+    limit: 50});
+  var stateProm = models.Status.findAll({ where: {DeviceId : self.id},
+    order: [ ['createdAt', 'ASC']],
+    limit: 100 });
+
+  var sync = Promise.all([logProm, stateProm])
+    .then(function([logs, state]) {
+      self.log('Got logs and status', "DEBUG")
+      // Post to some server
+      var options = {
+        method: 'POST',
+        uri: 'http://192.168.2.250:1337/sync',
+        body: {
+          device: self.dbDevice,
+          settings: self.desiredSettings,
+          logs: logs,
+          status: state,
+        },
+        json: true // Automatically stringifies the body to JSON
+      };
+      return rp(options);
+  });
+
+  return sync.then((result) => {
+    // Delete all the synced data
+    return models.Log.destroy({ where: { id: result.logIds }})
+      .then(() => {
+        return models.Status.destroy({ where: { id: result.statusIds }});
+      })
+  }).catch((err, message) => {
+    if (typeof err === 'string' || err instanceof String) {
+      self.log(err, "ERROR")
+    } else {
+      self.log(message + ':' + JSON.stringify(err), "ERROR")
+    }
+  });
+
+
   //self.log('Get mem');
   return self.sendCommand('memstatus', 'memstatus:')
     .then((result) => {

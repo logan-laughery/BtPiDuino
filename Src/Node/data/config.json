@@ -1,17 +1,26 @@
 {
   "development": {
-    "dialect": "sqlite",
-    "storage": "db/dev_octoferm.sqlite",
-    "logging": false
+    "dialect": "mssql",
+    "database": "Octoferm",
+    "username": "admin",
+    "password": "admin",
+    "host": "192.168.2.28",
+    "logging": true
   },
   "test": {
-    "dialect": "sqlite",
-    "storage": "db/test_octoferm.sqlite",
-    "logging": false
+    "dialect": "mssql",
+    "database": "Octoferm",
+    "username": "admin",
+    "password": "admin",
+    "host": "192.168.2.28",
+    "logging": true
   },
   "production": {
-    "dialect": "sqlite",
-    "storage": "db/prod_octoferm.sqlite",
-    "logging": false
+    "dialect": "mssql",
+    "database": "Octoferm",
+    "username": "admin",
+    "password": "admin",
+    "host": "192.168.2.28",
+    "logging": true
   }
 }

@@ -17,9 +17,11 @@
     "gulp-prompt": "^0.2.0",
     "gulp-ssh": "^0.6.0",
     "inquirer": "^3.0.1",
+    "request": "^2.81.0",
     "sequelize": "^3.30.4",
     "sequelize-cli": "^2.7.0",
     "sqlite3": "^3.1.8",
+    "tedious": "^2.0.0",
     "vinyl-source-stream": "^1.1.0"
   }
 }

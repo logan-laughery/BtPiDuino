@@ -41,7 +41,7 @@ gulp.task('deploy', ['password'], function(){
   return gulp.src(['./package.json', './octoferm-diagnostic.js',
     './.sequelizerc', './octoferm-manager.js',
     './octoferm-service.js', './octoferm-api.js',
-    './data/**/*.*', './routes/**/*.*', './db/**/*.*',
+    './data/**/*.*', './routes/**/*.*', //'./db/**/*.*',
     './service/**/*.*'], {base:__dirname})
     .pipe(sshConfig.dest('/home/pi/temp/octoferm'));
 });
