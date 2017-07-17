@@ -4,7 +4,7 @@
     "database": "Octoferm",
     "username": "admin",
     "password": "admin",
-    "host": "192.168.2.28",
+    "host": "173.31.120.214",
     "logging": true
   },
   "test": {
@@ -12,7 +12,7 @@
     "database": "Octoferm",
     "username": "admin",
     "password": "admin",
-    "host": "192.168.2.28",
+    "host": "173.31.120.214",
     "logging": true
   },
   "production": {
@@ -20,7 +20,7 @@
     "database": "Octoferm",
     "username": "admin",
     "password": "admin",
-    "host": "192.168.2.28",
+    "host": "173.31.120.214",
     "logging": true
   }
 }

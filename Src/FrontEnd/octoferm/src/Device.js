@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
 import CircularProgress from 'react-md/lib/Progress/CircularProgress';
+import Card from 'react-md/lib/Cards/Card';
+import DataTable from 'react-md/lib/DataTables/DataTable';
+import TableHeader from 'react-md/lib/DataTables/TableHeader';
+import TableBody from 'react-md/lib/DataTables/TableBody';
+import TableRow from 'react-md/lib/DataTables/TableRow';
+import TableColumn from 'react-md/lib/DataTables/TableColumn';
 
 class Device extends Component {
   state = {
     deviceId: null,
     device: null,
     logs: null,
-    loading: true,
-    status: null
+    statuses: null,
+    loading: true
   }
   componentDidMount() {
     this.setState({deviceId: this.props.match.params.deviceId});
@@ -26,7 +32,7 @@ class Device extends Component {
   }
 
   getDevice () {
-    return fetch('http://173.31.120.214:1337/devices/' + this.props.match.params.deviceId + '/status')
+    return fetch('http://localhost:1337/devices/' + this.props.match.params.deviceId + '/status')
       .then((res) => res.json())
       .then((data) => {
         this.setState({device: data.device});
@@ -34,15 +40,15 @@ class Device extends Component {
   }
 
   getStatus () {
-    return fetch('http://173.31.120.214:1337/devices/' + this.props.match.params.deviceId + '/status')
+    return fetch('http://localhost:1337/devices/' + this.props.match.params.deviceId + '/status')
       .then((res) => res.json())
       .then((data) => {
-        this.setState({status: data.status});
+        this.setState({statuses: data.status});
       });
   }
 
   getLogs () {
-    return fetch('http://173.31.120.214:1337/devices/' + this.props.match.params.deviceId + '/logs')
+    return fetch('http://localhost:1337/devices/' + this.props.match.params.deviceId + '/logs')
       .then((res) => res.json())
       .then((data) => {
         this.setState({logs: data.logs});
@@ -50,25 +56,42 @@ class Device extends Component {
   }
 
   render() {
-    const {device, loading, logs} = this.state
+    const {device, loading, logs, statuses} = this.state
     return (
-      <div>
-        {loading ?
-            <CircularProgress scale={2}/>
-          :
-            <div>
-              <div>{logs ?
-                  logs.map(function(log, i){
-                    return <div className="md-cell md-cell--4">
-                      {log.message}
-                    </div>
-                  })
-                : ''}</div>
-              {this.props.match.params.deviceId}
-            </div>
+      <div className='md-grid'>
+        {loading
+          ? <CircularProgress scale={2}/>
+          :[
+            <Card className="md-cell md-cell--8">
+              <DataTable plain>
+                <TableBody>
+                  {logs ?
+                    logs.map((log, i) =>
+                      <TableRow key={i}>
+                        <TableColumn>{log.createdAt}</TableColumn>
+                        <TableColumn>{log.message}</TableColumn>
+                      </TableRow>
+                    )
+                    : ''
+                  }
+                </TableBody>
+              </DataTable>
+            </Card>,
+            <Card className="md-cell md-cell--4">
+              <DataTable plain>
+                <TableBody>
+                  {statuses.map((status, i) =>
+                    <TableRow key={i}>
+                      <TableColumn>{status.temperature}</TableColumn>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </DataTable>
+            </Card>,
+            this.props.match.params.deviceId
+          ]
         }
       </div>
-
     );
   }
 }

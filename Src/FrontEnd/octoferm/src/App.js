@@ -21,7 +21,7 @@ class App extends Component {
   }
 
   loadConnected () {
-    return fetch('http://173.31.120.214:1337/devices')
+    return fetch('http://localhost:1337/devices')
       .then((res) => res.json())
       .then((data) => {
         this.setState({ loading: false });

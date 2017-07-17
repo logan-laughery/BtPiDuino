@@ -1,6 +1,7 @@
 var express = require('express');
 var path = require('path');
 var bodyParser = require('body-parser');
+var cors = require('cors');
 
 var devices  = require('./routes/devices');
 var router  = express.Router();
@@ -15,6 +16,9 @@ const port = 1337;
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cors());
+
+app.options('*', cors());
 
 // ROUTES FOR OUR API
 // =============================================================================

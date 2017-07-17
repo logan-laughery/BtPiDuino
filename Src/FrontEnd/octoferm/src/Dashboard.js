@@ -19,7 +19,7 @@ class Dashboard extends Component {
   }
 
   loadConnected () {
-    return fetch('http://173.31.120.214:1337/devices')
+    return fetch('http://localhost:1337/devices')
       .then((res) => res.json())
       .then((data) => {
         this.setState({ loading: false });
@@ -40,11 +40,12 @@ class Dashboard extends Component {
             <div className='md-grid'>
               {devices ? devices.map(function(device, i){
                 return <Card className="md-cell md-cell--4">
-                  <CardTitle title={'Fermentor #' + device.id}
+                  <CardTitle title={'Device #' + device.id}
                     subtitle={device.name + ' - ' + device.address}/>
 
                   <CardText>
-                    <Link to={'/device/' + device.id}>{device.name} - {device.address}</Link>
+                    <Link to={'/device/' + device.id}>{device.name}
+                      - {device.address}</Link>
                   </CardText>
 
                   <CardActions>
