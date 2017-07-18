@@ -9,6 +9,13 @@
   height: 80px;
 }
 
+.app-container.md-grid {
+    flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .App-header {
   background-color: #222;
   height: 150px;

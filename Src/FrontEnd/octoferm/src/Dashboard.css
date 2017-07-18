@@ -7,3 +7,6 @@ hr {
   margin-top: 0px;
   margin-bottom: 0px;
   border-color: rgba(227, 222, 222, 0.63); }
+
+.md-display-1.small {
+  font-size: 23px; }

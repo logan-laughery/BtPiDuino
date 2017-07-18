@@ -1,5 +1,5 @@
 var models  = require('../data/models');
-var BluetoothScanner = require('../service/bluetooth-scanner.js');
+//var BluetoothScanner = require('../service/bluetooth-scanner.js');
 var express = require('express');
 var router  = express.Router();
 
@@ -37,7 +37,24 @@ router.get('/', function(req, res) {
   .then(function (devices) {
     res.json({ devices: devices });
   }).catch(function(err) {
-    res.json({error: err});
+    console.log(err)
+    res.json({error: JSON.stringify(err)});
+  });
+});
+
+router.get('/details', function(req, res) {
+  models.sequelize.query("Select d.id as 'deviceId', settings.temperature as 'desiredTemperature'," +
+    "statuses.createdAt as 'lastConnected', d.name as 'name', d.address as 'address'," +
+    "statuses.temperature as 'actualTemperature', statuses.pumpState as 'pumpRunning',  " +
+    "settings.pumpState as 'desiredPumpState' from Devices d " +
+    "join Settings settings on settings.deviceid = d.id " +
+    "join Statuses statuses on statuses.id = " +
+    "(select top 1 s2.id from Statuses s2 where s2.deviceid=d.id order by s2.createdAt desc )"
+  ).spread((devices, metadata) => {
+    console.log(devices)
+    res.json({ devices: devices });
+  }).catch(function(err) {
+    res.json({error: JSON.stringify(err)});
   });
 });
 

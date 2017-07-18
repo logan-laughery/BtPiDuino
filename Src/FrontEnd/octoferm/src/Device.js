@@ -6,6 +6,7 @@ import TableHeader from 'react-md/lib/DataTables/TableHeader';
 import TableBody from 'react-md/lib/DataTables/TableBody';
 import TableRow from 'react-md/lib/DataTables/TableRow';
 import TableColumn from 'react-md/lib/DataTables/TableColumn';
+import './Device.css';
 
 class Device extends Component {
   state = {
@@ -58,7 +59,7 @@ class Device extends Component {
   render() {
     const {device, loading, logs, statuses} = this.state
     return (
-      <div className='md-grid'>
+      <div className="md-cell md-cell--12 device-container">
         {loading
           ? <CircularProgress scale={2}/>
           :[
