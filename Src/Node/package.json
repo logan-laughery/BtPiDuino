@@ -9,9 +9,9 @@
   "author": "Logan Laughery",
   "license": "ISC",
   "dependencies": {
-    "bluetooth-serial-port": "^2.1.2",
     "body-parser": "^1.17.1",
     "browserify": "^14.3.0",
+    "cors": "^2.8.4",
     "express": "^4.15.2",
     "gulp": "^3.9.1",
     "gulp-prompt": "^0.2.0",

@@ -51,7 +51,6 @@ router.get('/details', function(req, res) {
     "join Statuses statuses on statuses.id = " +
     "(select top 1 s2.id from Statuses s2 where s2.deviceid=d.id order by s2.createdAt desc )"
   ).spread((devices, metadata) => {
-    console.log(devices)
     res.json({ devices: devices });
   }).catch(function(err) {
     res.json({error: JSON.stringify(err)});
@@ -115,6 +114,27 @@ router.get('/:id/status', function(req, res) {
     res.json({ status: status });
   }).catch(function(err) {
     res.json({error: err});
+  });
+});
+
+router.get('/:id/status/minute', function(req, res) {
+  models.sequelize.query("select top 10000 " +
+    "avg(temperature) as 'temperature'," +
+    "convert(varchar(10),cast(createdAt as date))+ ' ' +" +
+    "convert(varchar(10),datepart(hour,createdAt))+ ':' +" +
+    "convert(varchar(10),datepart(minute,createdAt))+ ':00'" +
+    " as 'createdAt' "+
+    "from statuses where deviceid=? " +
+    "and createdAt < ? and createdAt > ? " +
+    "group by cast(createdAt as date), datepart(hour, createdAt),"+
+    "datepart(minute, createdAt) " +
+    "order by cast(createdAt as date)asc, datepart(hour, createdAt)asc,"+
+    "datepart(minute, createdAt)asc",
+    {replacements: [req.params.id, req.query.before, req.query.after]}
+  ).spread((statuses, metadata) => {
+    res.json({ statuses: statuses });
+  }).catch(function(err) {
+    res.json({error: JSON.stringify(err)});
   });
 });
 

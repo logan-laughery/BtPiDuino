@@ -4,13 +4,15 @@
   "private": true,
   "description": "An example usage of react-md and create-react-app.",
   "dependencies": {
+    "chart.js": "^2.6.0",
     "moment": "^2.18.1",
     "node-sass": "^4.5.2",
     "npm-run-all": "^4.0.2",
-    "react": "^15.5.4",
+    "react": "^15.6.1",
     "react-addons-css-transition-group": "^15.5.2",
     "react-addons-transition-group": "^15.5.2",
-    "react-dom": "^15.5.4",
+    "react-chartjs": "git://github.com/reactjs/react-chartjs.git#chartjs-v2",
+    "react-dom": "^15.6.1",
     "react-md": "*",
     "react-router-dom": "^4.1.2",
     "webfontloader": "^1.6.27"
