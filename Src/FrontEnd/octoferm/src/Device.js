@@ -48,7 +48,7 @@ class Device extends Component {
     var after = Moment();
     after.subtract(1, 'day');
     return fetch('http://localhost:1337/devices/' + this.props.match.params.deviceId + '/status/minute' +
-      '?before=' + current.format('YYYY-MM-DD h:mm:ss')  + '&after=' + after.format('YYYY-MM-DD h:mm:ss'))
+      '?before=' + current.format('YYYY-MM-DD HH:mm:ss')  + '&after=' + after.format('YYYY-MM-DD HH:mm:ss'))
       .then((res) => res.json())
       .then((data) => {
         this.setState({statuses: data.statuses});
@@ -65,6 +65,7 @@ class Device extends Component {
 
   render() {
     const {device, loading, logs, statuses, skip} = this.state
+    var maxDate = statuses.length > 1 ? Moment(statuses[statuses.length-1].createdAt)  : Moment()
     const options = {
       responsive: true,
       scales: {
@@ -79,16 +80,22 @@ class Device extends Component {
           type: 'time',
           display: true,
           time: {
-            format: 'MMMM DD'
+            tooltipFormat: 'lll',
+            format: 'MMMM DD',
+            //max: maxDate
+          },
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 5
           }
         }]
       }
     };
-    const datasets = {labels: statuses.filter((status, i) => i % skip === 0)
+    const datasets = {labels: statuses.filter((status, i) => (statuses.length === (i + 1)) || i % skip === 0)
         .map((status) => Moment(status.createdAt).toDate()),
       datasets: [{
       label: 'Temperature',
-      data: statuses.filter((status, i) => i % skip === 0).map((status) => status.temperature),
+      data: statuses.filter((status, i) => (statuses.length === (i + 1)) || i % skip === 0).map((status) => status.temperature),
       backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
@@ -113,7 +120,7 @@ class Device extends Component {
         {loading
           ? <CircularProgress scale={2}/>
           :[
-            <Card className="md-cell md-cell--12">
+            <Card className="md-cell md-cell--12 chart-cell">
               <LineChart data={datasets} options={options}/>
             </Card>,
             <Card className="md-cell md-cell--12">
