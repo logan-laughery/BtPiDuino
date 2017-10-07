@@ -47,8 +47,8 @@ router.get('/details', function(req, res) {
     "statuses.createdAt as 'lastConnected', d.name as 'name', d.address as 'address'," +
     "statuses.temperature as 'actualTemperature', statuses.pumpState as 'pumpRunning',  " +
     "settings.pumpState as 'desiredPumpState' from Devices d " +
-    "join Settings settings on settings.deviceid = d.id " +
-    "join Statuses statuses on statuses.id = " +
+    "left outer join Settings settings on settings.deviceid = d.id " +
+    "left outer join Statuses statuses on statuses.id = " +
     "(select top 1 s2.id from Statuses s2 where s2.deviceid=d.id order by s2.createdAt desc )"
   ).spread((devices, metadata) => {
     res.json({ devices: devices });
@@ -165,6 +165,7 @@ router.post('/:id/settings', function(req, res) {
   models.Settings.find({where: { DeviceId: req.params.id}})
   .then(function(record){
     if(record){
+      console.log(req.body) 
       return record.updateAttributes({
         temperature: req.body.temperature,
         pumpState: req.body.pumpState

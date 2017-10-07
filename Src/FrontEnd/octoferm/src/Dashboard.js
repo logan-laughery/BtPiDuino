@@ -71,7 +71,9 @@ class Dashboard extends Component {
                     <Link to={'/devices/' + device.deviceId}>
                       <Button flat primary label="Logs"></Button>
                     </Link>
-                    <Button flat primary label="Settings" />
+                    <Link to={'/settings/' + device.deviceId}>
+                      <Button flat primary label="Settings"></Button>
+                    </Link>
                   </CardActions>
                 </Card>;
               }) : <p></p>}

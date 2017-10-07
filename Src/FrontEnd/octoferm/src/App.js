@@ -4,6 +4,7 @@ import logo from './logo.svg';
 import './App.css';
 import device from './Device.js';
 import Dashboard from './Dashboard.js';
+import settings from './Settings.js';
 import Card from 'react-md/lib/Cards/Card';
 import CardTitle from 'react-md/lib/Cards/CardTitle';
 import CardActions from 'react-md/lib/Cards/CardActions';
@@ -80,6 +81,7 @@ class App extends Component {
             <Route exact path="/" location={location} component={Dashboard} />
             <Route exact path="/devices" location={location} component={Dashboard} />
             <Route path="/devices/:deviceId" location={location} component={device} />
+            <Route path="/settings/:deviceId" location={location} component={settings} /> 
           </Switch>
         {/*<Router>
         <div className="App">
